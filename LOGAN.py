@@ -8,6 +8,52 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 
+#Latent Optimization with gradient descent
+def lat_opt_gd(Gen, Dis, z, batch_size, labels, alpha=0.9, resolution, ch):
+    LongTensor = torch.cuda.LongTensor
+    labels=Variable(labels.type(LongTensor))
+    fake = Gen(z, G.shared(labels))
+    f_z = Dis(fake.view(batch_size, ch, resolution, resolution), labels)
+
+    fz_dz = torch.autograd.grad(outputs=f_z,
+                                inputs= z,
+                                grad_outputs=torch.ones_like(f_z),
+                                retain_graph=True,
+                                create_graph= True
+                                   )[0]
+    
+    delta_z = torch.ones_like(fz_dz)
+    delta_z = alpha * fz_dz
+    
+    with torch.no_grad():
+        z_prime = torch.clamp(z + delta_z, min=-1, max=1) 
+        
+    return z_prime
+
+#Latent Optimization with natural gradient descent  
+def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, resolution, ch):
+    LongTensor = torch.cuda.LongTensor
+    Tensor = torch.cuda.FloatTensor
+    labels=Variable(labels.type(LongTensor))
+    
+    fake = Gen(z, G.shared(labels))
+    f_z = Dis(fake.view(batch_size, ch, resolution, resolution), labels)
+
+    fz_dz = torch.autograd.grad(outputs=f_z,
+                                inputs= z,
+                                grad_outputs=torch.ones_like(f_z),
+                                retain_graph=True,
+                                create_graph= True
+                                   )[0]
+    
+    delta_z = torch.ones_like(fz_dz)
+    delta_z = (alpha * fz_dz) / (beta +  torch.square(torch.norm(fz_dz, p=2)))
+    with torch.no_grad():
+        z_prime = torch.clamp(z + delta_z, min=-1, max=1) 
+        
+    return z_prime
+
+
 class GBlock(nn.Module):
   def __init__(self, in_channels, out_channels,
                which_conv=nn.Conv2d, which_bn=layers.bn, activation=None,
