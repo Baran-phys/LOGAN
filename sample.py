@@ -73,7 +73,7 @@ def run(config):
                        else 'PXDgen')
     print('Experiment name is %s' % experiment_name)
 
-    G = BigGAN.Generator(**config).cuda()
+    G = Generator(**config).cuda()
 
     # Load weights
     print('Loading weights...')
