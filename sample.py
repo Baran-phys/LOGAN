@@ -1,7 +1,7 @@
 import os
 import torch
 import torchvision
-from BigGAN import *
+from LOGAN import *
 import utils
 import shutil
 
