@@ -54,52 +54,6 @@ def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, resolution
     return z_prime
 
 
-class GBlock(nn.Module):
-  def __init__(self, in_channels, out_channels,
-               which_conv=nn.Conv2d, which_bn=layers.bn, activation=None,
-               upsample=None, channel_ratio=4):
-    super(GBlock, self).__init__()
-    
-    self.in_channels, self.out_channels = in_channels, out_channels
-    self.hidden_channels = self.in_channels // channel_ratio
-    self.which_conv, self.which_bn = which_conv, which_bn
-    self.activation = activation
-    # Conv layers
-    self.conv1 = self.which_conv(self.in_channels, self.hidden_channels, 
-                                 kernel_size=1, padding=0)
-    self.conv2 = self.which_conv(self.hidden_channels, self.hidden_channels)
-    self.conv3 = self.which_conv(self.hidden_channels, self.hidden_channels)
-    self.conv4 = self.which_conv(self.hidden_channels, self.out_channels, 
-                                 kernel_size=1, padding=0)
-    # Batchnorm layers
-    self.bn1 = self.which_bn(self.in_channels)
-    self.bn2 = self.which_bn(self.hidden_channels)
-    self.bn3 = self.which_bn(self.hidden_channels)
-    self.bn4 = self.which_bn(self.hidden_channels)
-    # upsample layers
-    self.upsample = upsample
-
-  def forward(self, x, y):
-    # Project down to channel ratio
-    h = self.conv1(self.activation(self.bn1(x, y)))
-    # Apply next BN-ReLU
-    h = self.activation(self.bn2(h, y))
-    # Drop channels in x if necessary
-    if self.in_channels != self.out_channels:
-      x = x[:, :self.out_channels]      
-    # Upsample both h and x at this point  
-    if self.upsample:
-      h = self.upsample(h)
-      x = self.upsample(x)
-    # 3x3 convs
-    h = self.conv2(h)
-    h = self.conv3(self.activation(self.bn3(h, y)))
-    # Final 1x1 conv
-    h = self.conv4(self.activation(self.bn4(h, y)))
-    return h + x
-    
-    
-    
 
 def G_arch(ch=64, attention='64', ksize='333333', dilation='111111'):
   arch = {}
@@ -328,57 +282,7 @@ class Generator(nn.Module):
   
   
   
-  
-  class DBlock(nn.Module):
-  def __init__(self, in_channels, out_channels, which_conv=layers.SNConv2d, wide=True,
-               preactivation=True, activation=None, downsample=None,
-               channel_ratio=4):
-    super(DBlock, self).__init__()
-    self.in_channels, self.out_channels = in_channels, out_channels
-    # If using wide D (as in SA-GAN and BigGAN), change the channel pattern
-    self.hidden_channels = self.out_channels // channel_ratio
-    self.which_conv = which_conv
-    self.preactivation = preactivation
-    self.activation = activation
-    self.downsample = downsample
-        
-    # Conv layers
-    self.conv1 = self.which_conv(self.in_channels, self.hidden_channels, 
-                                 kernel_size=1, padding=0)
-    self.conv2 = self.which_conv(self.hidden_channels, self.hidden_channels)
-    self.conv3 = self.which_conv(self.hidden_channels, self.hidden_channels)
-    self.conv4 = self.which_conv(self.hidden_channels, self.out_channels, 
-                                 kernel_size=1, padding=0)
-                                 
-    self.learnable_sc = True if (in_channels != out_channels) else False
-    if self.learnable_sc:
-      self.conv_sc = self.which_conv(in_channels, out_channels - in_channels, 
-                                     kernel_size=1, padding=0)
-  def shortcut(self, x):
-    if self.downsample:
-      x = self.downsample(x)
-    if self.learnable_sc:
-      x = torch.cat([x, self.conv_sc(x)], 1)    
-    return x
-    
-  def forward(self, x):
-    # 1x1 bottleneck conv
-    h = self.conv1(F.relu(x))
-    # 3x3 convs
-    h = self.conv2(self.activation(h))
-    h = self.conv3(self.activation(h))
-    # relu before downsample
-    h = self.activation(h)
-    # downsample
-    if self.downsample:
-      h = self.downsample(h)     
-    # final 1x1 conv
-    h = self.conv4(h)
-    return h + self.shortcut(x)
-    
-  
-  
-  
+
   
  # Discriminator architecture, same paradigm as G's above
 def D_arch(ch=64, attention='64',ksize='333333', dilation='111111'):
