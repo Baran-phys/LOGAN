@@ -55,9 +55,9 @@ def run(config):
     state_dict = {'itr': 0, 'epoch': 0, 'save_num': 0, 'config': config}
 
     # update config (see train.py for explanation)
-    config['resolution'] = 64
-    config['n_classes'] = 120
-    config['G_activation'] = utils.activation_dict[config['G_nl']]
+    config['resolution'] = 256
+    config['n_classes'] = 40
+    config['G_activation'] = utils.activation_dict[config['G_nl']] #leaky relu for LOGAN
     config['D_activation'] = utils.activation_dict[config['D_nl']]
     config = utils.update_config_roots(config)
     config['skip_init'] = True
@@ -70,7 +70,7 @@ def run(config):
     torch.backends.cudnn.benchmark = True
 
     experiment_name = (config['experiment_name'] if config['experiment_name']
-                       else 'generative_dog_images')
+                       else 'PXDgen')
     print('Experiment name is %s' % experiment_name)
 
     G = BigGAN.Generator(**config).cuda()
@@ -84,7 +84,7 @@ def run(config):
                        strict=False, load_optim=False)
 
     if config['use_ema']:
-        collect_bn_stats(G, 10_000, config, device)
+        collect_bn_stats(G, 500, config, device)
     if config['G_eval_mode']:
         print('Putting G in eval mode..')
         G.eval()
