@@ -22,7 +22,7 @@ def lat_opt_gd(Gen, Dis, z, batch_size, labels, alpha=0.9, resolution, ch):
                                 create_graph= True
                                    )[0]
     
-    delta_z = torch.ones_like(fz_dz)
+
     delta_z = alpha * fz_dz
     
     with torch.no_grad():
@@ -46,7 +46,7 @@ def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, resolution
                                 create_graph= True
                                    )[0]
     
-    delta_z = torch.ones_like(fz_dz)
+
     delta_z = (alpha * fz_dz) / (beta +  torch.square(torch.norm(fz_dz, p=2)))
     with torch.no_grad():
         z_prime = torch.clamp(z + delta_z, min=-1, max=1) 
