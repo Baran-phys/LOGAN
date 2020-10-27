@@ -9,6 +9,7 @@ from utils import toggle_grad, ortho, save_weights
 
 def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
     def train(x, y):
+        G_batch_size = max(config['G_batch_size'], config['batch_size'])
         G.optim.zero_grad()
         D.optim.zero_grad()
         
