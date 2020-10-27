@@ -1,6 +1,6 @@
-
+import functools
 from functools import partial
-from layers import *
+import layer
 import torch
 import torch.nn as nn
 from torch.nn import init
