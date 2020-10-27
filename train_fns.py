@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torchvision
 import utils
 from utils import toggle_grad, ortho, save_weights
-from LOGAN import *
+from LOGAN import lat_opt_ngd, lat_opt_gd
 
 
 def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
