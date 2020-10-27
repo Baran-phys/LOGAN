@@ -80,14 +80,13 @@ def run(config):
     # Allow for different batch sizes in G
     G_batch_size = max(config['G_batch_size'], config['batch_size'])
     z_, y_ = utils.prepare_z_y(
-        G_batch_size, G.dim_z, config['n_classes'], device=device, fp16=config['G_fp16'])
+        G_batch_size, G.dim_z, config['n_classes'], device=device, fp16=config['G_fp16'], ngd = True, fixed = False)
         
-    #Use latent optimization
-    z_prime = lat_opt_ngd(G, D, z_, G_batch_size, y_, config['resolution'], ch=1)
+
     
     # Prepare a fixed z & y to see individual sample evolution throghout training
-    fixed_z, fixed_y = utils.prepare_z_y(
-        G_batch_size, G.dim_z, config['n_classes'], device=device, fp16=config['G_fp16'])
+    fixed_z, fixed_y = prepare_z_y(
+        G_batch_size, G.dim_z, config['n_classes'], device=device, fp16=config['G_fp16'], fixed = True)
     # Loaders are loaded, prepare the training function
     train = train_fns.create_train_fn(G, D, GD, z_, y_, ema, state_dict, config)
 
