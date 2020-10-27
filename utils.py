@@ -532,9 +532,13 @@ def toggle_grad(model, on_or_off):
 
 
 
-def prepare_z_y(G_batch_size, dim_z, nclasses, device='cuda', fp16=False, z_var=1.0, ngd=True):
+def prepare_z_y(G_batch_size, dim_z, nclasses, device='cuda', fp16=False, z_var=1.0, ngd=True, fixed = False):
     if ngd:
-        z_ = Variable(Tensor(np.random.uniform(-1, 1, (G_batch_size, dim_z))), requires_grad=True)
+        Tensor = torch.cuda.FloatTensor
+        if fixed:
+            z_ = Variable(Tensor(np.random.uniform(-1, 1, (G_batch_size, dim_z))), requires_grad=False)
+        else: 
+            z_ = Variable(Tensor(np.random.uniform(-1, 1, (G_batch_size, dim_z))), requires_grad=True)
 
     else:
         latents = torch.randn((batch_size, latent_dim), dtype=torch.float32, device=device)
