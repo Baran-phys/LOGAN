@@ -23,7 +23,7 @@ def run(config):
     config['resolution'] = 256
     config['n_classes'] = 40
     config['G_activation'] = utils.activation_dict[config['G_nl']] #Leaky relu for LOGAN
-    config['D_activation'] = utils.activation_dict[config['D_nl']]
+    config['D_activation'] = utils.activation_dict[config['D_nl']] #Leaky relu for LOGAN
     # By default, skip init if resuming training.
     if config['resume']:
         print('Skipping initialization for training resumption...')
