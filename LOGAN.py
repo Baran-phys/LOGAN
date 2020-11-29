@@ -31,7 +31,7 @@ def lat_opt_gd(Gen, Dis, z, batch_size, labels, alpha=0.9, resolution, ch):
     return z_prime
 
 #Latent Optimization with natural gradient descent  
-def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, resolution, ch):
+def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, c_rate=0.5, resolution, ch, DOT_reg=True):
     LongTensor = torch.cuda.LongTensor
     Tensor = torch.cuda.FloatTensor
     labels=Variable(labels.type(LongTensor))
@@ -46,12 +46,18 @@ def lat_opt_ngd(Gen, Dis, z, batch_size, labels, alpha= 0.9, beta= 5, resolution
                                 create_graph= True
                                    )[0]
     
-
-    delta_z = (alpha * fz_dz) / (beta +  torch.square(torch.norm(fz_dz, p=2)))
+    
+    portion = (Tensor(batch_size, 1).uniform_() > 1 - c_rate)
+    delta_z = (alpha * fz_dz) / (beta +  torch.unsqueeze((fz_dz.norm(2, dim=1) ** 2), dim=1))
     with torch.no_grad():
-        z_prime = torch.clamp(z + delta_z, min=-1, max=1) 
+        #z_prime = torch.clamp(z + delta_z, min=-1, max=1)
+        z_prime = torch.clamp(z + portion*delta_z, min= -1, max= 1)
         
-    return z_prime
+    if DOT_reg:
+        euc_norm = (delta_z.norm(2, dim=1)**2)
+            return z_prime, euc_norm
+    else:
+        return z_prime   
 
 
 
