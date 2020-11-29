@@ -22,6 +22,7 @@ def run(config):
     # for the activation specified as a string)
     config['resolution'] = 256
     config['n_classes'] = 40
+    config['latent_reg_weight'] = 300
     config['G_activation'] = utils.activation_dict[config['G_nl']] #Leaky relu for LOGAN
     config['D_activation'] = utils.activation_dict[config['D_nl']] #Leaky relu for LOGAN
     # By default, skip init if resuming training.
