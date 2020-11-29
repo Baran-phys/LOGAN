@@ -14,8 +14,7 @@ def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
         G.optim.zero_grad()
         D.optim.zero_grad()
         
-        #Use latent optimization
-        z_prime = lat_opt_ngd(G, D, z_, G_batch_size, y_)
+        
         
         # How many chunks to split x and y into?
         x = torch.split(x, config['batch_size'])
@@ -33,7 +32,6 @@ def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
             for accumulation_index in range(config['num_D_accumulations']):
                 #Use latent optimization
                 z_prime = lat_opt_ngd(G, D, z_, G_bs, y_, alpha= 0.9, beta= 5, c_rate=0.5, DOT_reg=False)
-                y_.sample_()
                 
                 D_fake, D_real = GD(z_prime[:config['batch_size']], y_[:config['batch_size']],
                                     x[counter], y[counter], train_G=False,
@@ -62,8 +60,10 @@ def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
 
         # If accumulating gradients, loop multiple times
         for accumulation_index in range(config['num_G_accumulations']):
+            
+            #Use latent optimization for the generator
             z_prime, euc_norm = lat_opt_ngd(G, D, z_, G_bs, y_, alpha= 0.9, beta= 5, c_rate=0.5, DOT_reg=True)
-            y_.sample_()
+
             
             D_fake = GD(z_prime, y_, train_G=True, split_D=config['split_D'])
             G_loss = loss_hinge_gen(D_fake) / float(config['num_G_accumulations'])
