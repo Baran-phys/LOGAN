@@ -10,7 +10,7 @@ from LOGAN import lat_opt_ngd, lat_opt_gd
 
 def create_train_fn(G, D, GD, z_, y_, ema, state_dict, config):
     def train(x, y):
-        G_batch_size = max(config['G_batch_size'], config['batch_size'])
+        G_bs = max(config['G_batch_size'], config['batch_size'])
         G.optim.zero_grad()
         D.optim.zero_grad()
         
