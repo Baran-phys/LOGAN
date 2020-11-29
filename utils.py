@@ -541,12 +541,12 @@ def prepare_z_y(G_batch_size, dim_z, nclasses, device='cuda', fp16=False, z_var=
             z_ = Variable(Tensor(np.random.uniform(-1, 1, (G_batch_size, dim_z))), requires_grad=True)
 
     else:
-        latents = torch.randn((batch_size, latent_dim), dtype=torch.float32, device=device)
+        latents = torch.randn((G_batch_size, latent_dim), dtype=torch.float32, device=device)
 
         if fp16:
               z_ = z_.half()
 
-    y_ = torch.randint(0, num_classes, size=(batch_size,), dtype=torch.long, device=device)
+    y_ = torch.randint(0, num_classes, size=(G_batch_size,), dtype=torch.long, device=device)
     return z_, y_
 
 
